@@ -34,6 +34,10 @@ partial class MainForm
         this.StartPosition = FormStartPosition.CenterScreen;
         this.MinimumSize = new Size(800, 500);
         this.Icon = SystemIcons.Application;
+        
+        SetupToolStrip();
+        SetupMainPanel();
+        SetupStatusBar();
     }
 
     private void SetupToolStrip()
@@ -87,6 +91,14 @@ partial class MainForm
             Size = new Size(40, 20),
             ForeColor = Color.White
         };
+        
+        dtpDate = new DateTimePicker
+        {
+            Location = new Point(270, 3),
+            Size = new Size(120, 25),
+            Value = DateTime.Today
+        };
+        
         dtpDate.ValueChanged += (s, e) => LoadMatches();
 
         chkFavoriteOnly = new CheckBox
@@ -222,27 +234,27 @@ partial class MainForm
         teams = new List<Team>
         {
             // Football
-            new Team { Id = 1, Name = "Real Madrid", Sport = "Bóng đá", League = "La Liga", Country = "Spain" },
-            new Team { Id = 2, Name = "Barcelona", Sport = "Bóng đá", League = "La Liga", Country = "Spain" },
+            new Team { Id = 1, Name = "Real Madrid", Sport = "Football", League = "La Liga", Country = "Spain" },
+            new Team { Id = 2, Name = "Barcelona", Sport = "Football", League = "La Liga", Country = "Spain" },
             new Team
             {
-                Id = 3, Name = "Manchester United", Sport = "Bóng đá", League = "Premier League", Country = "England"
+                Id = 3, Name = "Manchester United", Sport = "Football", League = "Premier League", Country = "England"
             },
-            new Team { Id = 4, Name = "Chelsea", Sport = "Bóng đá", League = "Premier League", Country = "England" },
-            new Team { Id = 5, Name = "Bayern Munich", Sport = "Bóng đá", League = "Bundesliga", Country = "Germany" },
+            new Team { Id = 4, Name = "Chelsea", Sport = "Football", League = "Premier League", Country = "England" },
+            new Team { Id = 5, Name = "Bayern Munich", Sport = "Football", League = "Bundesliga", Country = "Germany" },
 
             // Lol
-            new Team { Id = 6, Name = "T1", Sport = "LMHT", League = "LCK", Country = "South Korea" },
-            new Team { Id = 7, Name = "G2 Esports", Sport = "LMHT", League = "LEC", Country = "Europe" },
-            new Team { Id = 8, Name = "Cloud9", Sport = "LMHT", League = "LCS", Country = "North America" },
-            new Team { Id = 9, Name = "Fnatic", Sport = "LMHT", League = "LEC", Country = "Europe" },
+            new Team { Id = 6, Name = "T1", Sport = "Lol", League = "LCK", Country = "South Korea" },
+            new Team { Id = 7, Name = "G2 Esports", Sport = "Lol", League = "LEC", Country = "Europe" },
+            new Team { Id = 8, Name = "Cloud9", Sport = "Lol", League = "LCS", Country = "North America" },
+            new Team { Id = 9, Name = "Fnatic", Sport = "Lol", League = "LEC", Country = "Europe" },
 
             // CS2
-            new Team { Id = 10, Name = "Astralis", Sport = "CS:GO", League = "ESL Pro League", Country = "Denmark" },
-            new Team { Id = 11, Name = "NAVI", Sport = "CS:GO", League = "ESL Pro League", Country = "Ukraine" },
+            new Team { Id = 10, Name = "Astralis", Sport = "CS2", League = "ESL Pro League", Country = "Denmark" },
+            new Team { Id = 11, Name = "NAVI", Sport = "CS2", League = "ESL Pro League", Country = "Ukraine" },
             new Team
             {
-                Id = 12, Name = "FaZe Clan", Sport = "CS:GO", League = "ESL Pro League", Country = "International"
+                Id = 12, Name = "FaZe Clan", Sport = "CS2", League = "ESL Pro League", Country = "International"
             },
 
             // Basketball
@@ -309,7 +321,7 @@ partial class MainForm
     private String GetRandomSport()
     {
         var sports = new[] { "Football", "Lol", "CS2", "Basketball", "Valorant", "Dota 2" };
-        var weights = new[] { 40, 25, 15, 15, 5 };
+        var weights = new[] { 40, 25, 15, 10, 5, 5 };
 
         var random = new Random();
         var totalWeight = weights.Sum();

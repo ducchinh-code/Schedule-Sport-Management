@@ -1,92 +1,93 @@
 ﻿namespace ScheduleApp;
+using System.Text;
 
 public class FavoritesForm : Form
 {
-    private List<Team> teams;
+    private readonly List<Team> teams;
     private CheckedListBox clbTeams;
     private Button btnSelectAll;
     private Button btnDeselectAll;
     private Button btnOk;
     private Button btnCancel;
     private Label lblInfo;
-    private GroupBox grbFootball;
-    private GroupBox grbEsports;
-    private GroupBox grbOthers;
 
     public FavoritesForm(List<Team> teams)
     {
-        this.teams = teams;
+        this.teams = teams ?? throw new ArgumentNullException(nameof(teams));
         InitializeComponent();
         LoadTeams();
     }
 
     private void InitializeComponent()
     {
+        // Form setup
         this.Text = "Manage Favorites";
-        this.Size = new Size(500, 600);
+        this.ClientSize = new Size(500, 600);
         this.StartPosition = FormStartPosition.CenterParent;
         this.FormBorderStyle = FormBorderStyle.FixedDialog;
         this.MaximizeBox = false;
         this.MinimizeBox = false;
         this.BackColor = Color.White;
+        this.Padding = new Padding(10);
 
-        var lblTitle = new Label()
+        // Title label
+        var lblTitle = new Label
         {
-            Text = "Select your favorite team",
-            Location = new Point(20, 20),
-            Size = new Size(450, 25),
+            Text = "Select your favorite teams",
+            Dock = DockStyle.Top,
+            Height = 40,
             Font = new Font("Arial", 14, FontStyle.Bold),
             ForeColor = Color.DarkBlue,
-            TextAlign = ContentAlignment.MiddleCenter,
+            TextAlign = ContentAlignment.MiddleCenter
         };
 
-        lblInfo = new Label()
+        // Info label
+        lblInfo = new Label
         {
-            Text = "Select your favorite teams. Your favorite teams's match will be highlighted",
-            Location = new Point(20, 55),
-            Size = new Size(450, 30),
+            Dock = DockStyle.Top,
+            Height = 40,
             Font = new Font("Arial", 9),
             ForeColor = Color.Gray,
-            TextAlign = ContentAlignment.MiddleCenter,
+            TextAlign = ContentAlignment.MiddleCenter
         };
 
-        btnSelectAll = new Button()
+        // Button panel
+        var buttonPanel = new Panel
+        {
+            Dock = DockStyle.Bottom,
+            Height = 50,
+            BackColor = Color.Transparent
+        };
+
+        // Buttons
+        btnSelectAll = new Button
         {
             Text = "Select all",
-            Location = new Point(20, 95),
             Size = new Size(100, 30),
             BackColor = Color.Green,
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
+            Anchor = AnchorStyles.Top | AnchorStyles.Left
         };
         btnSelectAll.Click += BtnSelectAll_Click;
 
-        btnDeselectAll = new Button()
+        btnDeselectAll = new Button
         {
             Text = "Unselect all",
-            Location = new Point(130, 95),
             Size = new Size(100, 30),
+            Location = new Point(110, 0),
             BackColor = Color.Red,
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
+            Anchor = AnchorStyles.Top | AnchorStyles.Left
         };
         btnDeselectAll.Click += BtnDeselectAll_Click;
 
-        clbTeams = new CheckedListBox()
+        btnOk = new Button
         {
-            Location = new Point(20, 140),
-            Size = new Size(450, 350),
-            CheckOnClick = true,
-            Font = new Font("Arial", 10),
-            BackColor = Color.White,
-            BorderStyle = BorderStyle.FixedSingle
-        };
-
-        btnOk = new Button()
-        {
-            Text = "Save data",
-            Location = new Point(280, 510),
-            Size = new Size(120, 35),
+            Text = "Save",
+            Size = new Size(80, 30),
+            Anchor = AnchorStyles.Top | AnchorStyles.Right,
             BackColor = Color.Blue,
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
@@ -95,53 +96,102 @@ public class FavoritesForm : Form
         };
         btnOk.Click += BtnOk_Click;
 
-        btnCancel = new Button()
+        btnCancel = new Button
         {
             Text = "Cancel",
-            Location = new Point(410, 510),
-            Size = new Size(100, 35),
+            Size = new Size(80, 30),
+            Location = new Point(90, 0),
+            Anchor = AnchorStyles.Top | AnchorStyles.Right,
             BackColor = Color.Gray,
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
             Font = new Font("Arial", 10),
             DialogResult = DialogResult.Cancel
         };
-        
-        this.Controls.AddRange(new Control[]
+
+        // CheckedListBox
+        clbTeams = new CheckedListBox
         {
-            lblTitle,lblInfo,btnSelectAll,btnDeselectAll,clbTeams,btnOk,btnCancel
-        });
+            Dock = DockStyle.Fill,
+            CheckOnClick = true,
+            Font = new Font("Arial", 10),
+            BackColor = Color.White,
+            BorderStyle = BorderStyle.FixedSingle,
+            IntegralHeight = false
+        };
+
+        // Layout
+        buttonPanel.Controls.Add(btnSelectAll);
+        buttonPanel.Controls.Add(btnDeselectAll);
+        
+        var okCancelPanel = new Panel
+        {
+            Dock = DockStyle.Right,
+            Width = 180,
+            BackColor = Color.Transparent
+        };
+        okCancelPanel.Controls.Add(btnCancel);
+        okCancelPanel.Controls.Add(btnOk);
+        buttonPanel.Controls.Add(okCancelPanel);
+
+        this.Controls.Add(clbTeams);
+        this.Controls.Add(buttonPanel);
+        this.Controls.Add(lblInfo);
+        this.Controls.Add(lblTitle);
+
+        // Update info text
+        UpdateSelectionInfo();
     }
 
     private void LoadTeams()
     {
-        clbTeams.Items.Clear();
-        var groupedTeams = teams.GroupBy(t => t.Sport).OrderBy(g => GetSportOrder(g.Key));
-
-        foreach (var group in groupedTeams)
+        
+        clbTeams.BeginUpdate();
+        try
         {
-            var header = $"== {GetSportIcon(group.Key)} {group.Key.ToUpper()} ==";
-            clbTeams.Items.Add(header, false);
+            clbTeams.Items.Clear();
+            var groupedTeams = teams
+                .GroupBy(t => t.Sport)
+                .OrderBy(g => GetSportOrder(g.Key));
 
-            foreach (var team in group.OrderBy(t => t.Name))
+            foreach (var group in groupedTeams)
             {
-                var displayText = $"   {GetTeamIcon(team.Sport)} {team.Name}";
-                if (!string.IsNullOrEmpty(team.League))
+                // Add sport header
+                clbTeams.Items.Add($"== {GetSportIcon(group.Key)} {group.Key.ToUpper()} ==", false);
+
+                // Add teams
+                foreach (var team in group.OrderBy(t => t.Name))
                 {
-                    displayText += $" {team.League}";
+                    var index = clbTeams.Items.Add(CreateTeamDisplayText(team), team.IsFavorite);
+                    clbTeams.SetItemChecked(index, team.IsFavorite);
                 }
 
-                if (!string.IsNullOrEmpty(team.Country))
-                {
-                    displayText += $" - {team.Country}";
-                }
-                clbTeams.Items.Add(displayText, team.IsFavorite);
+                // Add spacer
+                clbTeams.Items.Add("", false);
             }
+        }
+        finally
+        {
+            clbTeams.EndUpdate();
+        }
+    }
+    
+    private string CreateTeamDisplayText(Team team)
+    {
+        var sb = new StringBuilder();
+        sb.Append($"   {GetTeamIcon(team.Sport)} {team.Name}");
 
-            clbTeams.Items.Add("", false);
+        if (!string.IsNullOrEmpty(team.League))
+        {
+            sb.Append($" ({team.League})");
         }
 
-        UpdateSelectionInfo();
+        if (!string.IsNullOrEmpty(team.Country))
+        {
+            sb.Append($" - {team.Country}");
+        }
+
+        return sb.ToString();
     }
 
     private int GetSportOrder(string sport)
@@ -206,7 +256,7 @@ public class FavoritesForm : Form
         for (int i = 0; i < clbTeams.Items.Count; i++)
         {
             var itemText = clbTeams.Items[i].ToString();
-            if (clbTeams.GetItemChecked(i) && !itemText.StartsWith("'==") && !string.IsNullOrEmpty(itemText.Trim()))
+            if (clbTeams.GetItemChecked(i) && !itemText.StartsWith("==") && !string.IsNullOrEmpty(itemText.Trim()))
             {
                 selectedCount++;
             }
@@ -245,28 +295,25 @@ public class FavoritesForm : Form
 
     private string ExtractTeamName(string displayText)
     {
-        var text = displayText.Trim();
-        if (text.StartsWith("   "))
-        {
-            text = text.Substring(3).Trim();
-        }
+        if (string.IsNullOrWhiteSpace(displayText))
+            return string.Empty;
 
-        if (text.Length > 2 && text[1] == ' ')
-        {
-            text = text.Substring(2).Trim();
-        }
-        
-        var parentIndex = text.IndexOf('(');
-        if (parentIndex > 0)
-        {
-            text = text.Substring(0,parentIndex).Trim();
-        }
-        var dashIndex = text.IndexOf(" - ");
-        if (dashIndex > 0)
-        {
-            text = text.Substring(0, dashIndex).Trim();
-        }
-        return text;
+        // Remove leading spaces and icons
+        var text = displayText.TrimStart();
+        if (text.StartsWith("   "))
+            text = text[3..].TrimStart();
+
+        // Find the first of these delimiters
+        var delimiters = new[] { " (", " - " };
+        var firstDelimiterIndex = delimiters
+            .Select(d => text.IndexOf(d, StringComparison.Ordinal))
+            .Where(i => i > 0)
+            .DefaultIfEmpty(-1)
+            .Min();
+
+        return firstDelimiterIndex > 0 
+            ? text[..firstDelimiterIndex].Trim() 
+            : text.Trim();
     }
 
     protected override void OnLoad(EventArgs e)
